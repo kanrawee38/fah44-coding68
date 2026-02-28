@@ -1,0 +1,139 @@
+import tkinter as tk
+from tkinter import messagebox
+
+# ---------------- ฟังก์ชัน ----------------
+
+def create_subject_inputs():
+    global subject_entries
+    
+    for widget in subject_frame.winfo_children():
+        widget.destroy()
+    
+    subject_entries = []
+    
+    try:
+        n = int(num_subjects_entry.get())
+        if n <= 0:
+            messagebox.showerror("Error", "จำนวนวิชาต้องมากกว่า 0")
+            return
+    except:
+        messagebox.showerror("Error", "กรุณากรอกตัวเลขให้ถูกต้อง")
+        return
+    
+    for i in range(n):
+        label = tk.Label(subject_frame, 
+                         text=f"📚 วิชาที่ {i+1}",
+                         bg="#f3e8ff",
+                         font=("Segoe UI", 11))
+        label.grid(row=i, column=0, padx=8, pady=5, sticky="w")
+        
+        entry = tk.Entry(subject_frame, font=("Segoe UI", 11), width=20)
+        entry.grid(row=i, column=1, padx=8, pady=5)
+        
+        subject_entries.append(entry)
+
+def calculate_plan():
+    try:
+        hours_per_day = float(hours_entry.get())
+        if hours_per_day <= 0:
+            messagebox.showerror("Error", "ชั่วโมงต้องมากกว่า 0")
+            return
+    except:
+        messagebox.showerror("Error", "กรุณากรอกตัวเลขชั่วโมงให้ถูกต้อง")
+        return
+    
+    n = len(subject_entries)
+    if n == 0:
+        messagebox.showerror("Error", "กรุณาสร้างช่องกรอกวิชาก่อน")
+        return
+    
+    hours_each = hours_per_day / n
+    
+    result_text.config(state="normal")
+    result_text.delete("1.0", tk.END)
+    result_text.insert(tk.END, "🌸 ตารางอ่านหนังสือของคุณ 🌸\n\n")
+    
+    if hours_each < 0.5:
+        result_text.insert(tk.END, "⚠️ เวลาน้อยเกินไป แนะนำให้เพิ่มเวลา\n")
+    else:
+        for entry in subject_entries:
+            subject = entry.get().strip()
+            if subject == "":
+                subject = "ไม่ระบุชื่อ"
+            result_text.insert(tk.END, 
+                f"💜 {subject:<15} : {round(hours_each,2)} ชั่วโมง/วัน\n")
+    
+    result_text.config(state="disabled")
+
+# ---------------- หน้าต่างหลัก ----------------
+
+root = tk.Tk()
+root.title("✨ Study Planner ✨")
+root.geometry("520x620")
+root.configure(bg="#f3e8ff")
+
+# หัวข้อ
+title = tk.Label(root,
+                 text="✨ โปรแกรมจัดตารางอ่านหนังสือ ✨",
+                 font=("Segoe UI", 16, "bold"),
+                 bg="#f3e8ff",
+                 fg="#6b21a8")
+title.pack(pady=20)
+
+# กรอบข้อมูล
+input_frame = tk.Frame(root, bg="#e9d5ff", bd=2, relief="ridge")
+input_frame.pack(padx=20, pady=10, fill="x")
+
+tk.Label(input_frame, text="จำนวนวิชา:",
+         bg="#e9d5ff",
+         font=("Segoe UI", 12)).pack(pady=5)
+
+num_subjects_entry = tk.Entry(input_frame, font=("Segoe UI", 12))
+num_subjects_entry.pack(pady=5)
+
+tk.Button(input_frame,
+          text="สร้างช่องกรอกวิชา 💕",
+          command=create_subject_inputs,
+          bg="#c084fc",
+          fg="white",
+          font=("Segoe UI", 11, "bold"),
+          relief="flat",
+          padx=10,
+          pady=5).pack(pady=10)
+
+subject_frame = tk.Frame(root, bg="#f3e8ff")
+subject_frame.pack(pady=10)
+
+# ชั่วโมงต่อวัน
+hour_frame = tk.Frame(root, bg="#e9d5ff", bd=2, relief="ridge")
+hour_frame.pack(padx=20, pady=10, fill="x")
+
+tk.Label(hour_frame,
+         text="อ่านวันละกี่ชั่วโมง:",
+         bg="#e9d5ff",
+         font=("Segoe UI", 12)).pack(pady=5)
+
+hours_entry = tk.Entry(hour_frame, font=("Segoe UI", 12))
+hours_entry.pack(pady=5)
+
+tk.Button(hour_frame,
+          text="คำนวณตารางอ่าน ✨",
+          command=calculate_plan,
+          bg="#a855f7",
+          fg="white",
+          font=("Segoe UI", 12, "bold"),
+          relief="flat",
+          padx=10,
+          pady=8).pack(pady=15)
+
+# แสดงผล
+result_text = tk.Text(root,
+                      height=10,
+                      font=("Segoe UI", 11),
+                      bg="#faf5ff",
+                      bd=2,
+                      relief="groove")
+result_text.pack(padx=20, pady=15)
+result_text.config(state="disabled")
+
+root.mainloop()
